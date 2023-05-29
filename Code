@@ -1,0 +1,95 @@
+USE new_schema;
+
+-- 1. Используя операторы языка SQL, создайте табличку “sales”. Заполните ее данными
+CREATE TABLE IF NOT EXISTS sales (
+	id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    CountSold INT UNSIGNED,
+    TotalAmount INT UNSIGNED
+);
+
+DESC phone;
+
+ALTER TABLE phone -- Потомок
+  ADD CONSTRAINT phone_sales_id_fk 
+    FOREIGN KEY (sales_id) REFERENCES sales(id) -- Предок
+	  ON DELETE NO ACTION -- CASCADE, SET NULL, NO ACTION, RESTRICT, SET DEFAULT
+      ON UPDATE CASCADE;
+      
+INSERT sales (
+  CountSold, TotalAmount) 
+VALUES 
+  (2, 152000),
+  (2, 102000),
+  (1, 56000),
+  (1, 41000),
+  (2, 72000),
+  (1, 5000);
+
+SELECT * FROM sales;
+SELECT * FROM phone;
+
+UPDATE phone
+SET ProductCount = 4
+WHERE id = 1;
+
+-- 2. Сгруппируйте значений количества в 3 сегмента — меньше 5000, 5000-51000 и больше 51000.
+
+SELECT * FROM phone;
+
+SELECT id, TotalAmount, -- Перед CASE ставится запятая
+CASE
+    WHEN TotalAmount < 5000 THEN "Меньше 5000"
+    WHEN TotalAmount >= 5000 AND TotalAmount <= 51000 THEN "5000-51000"
+    WHEN TotalAmount > 51000 THEN "Больше 51000"
+    ELSE "Error 404"
+END AS Segment
+FROM sales;
+
+-- 3. Создайте таблицу “orders”, заполните ее значениями. Покажите “полный” статус заказа, используя оператор CASE
+
+CREATE TABLE IF NOT EXISTS orders (
+	id INT UNSIGNED PRIMARY KEY NOT NULL AUTO_INCREMENT,
+    ProductAvailability VARCHAR(70)
+);
+
+INSERT orders (
+  ProductAvailability) 
+VALUES 
+  ("Ecть"),
+  ("Нeт"),
+  ("Ecть"),
+  ("Нeт"),
+  ("Ecть"),
+  ("Ecть");
+
+#SELECT * FROM orders;
+#UPDATE orders
+#SET ProductAvailability = RAND(); -- Или 0, или 1
+#SELECT round(RAND(2) * 100);
+
+ALTER TABLE phone
+ADD orders_id INT UNSIGNED;
+
+SELECT * FROM phone;
+
+ALTER TABLE phone -- Потомок
+  ADD CONSTRAINT phone_orders_id_fk 
+    FOREIGN KEY (orders_id) REFERENCES orders(id) -- Предок
+	  ON DELETE NO ACTION -- CASCADE, SET NULL, NO ACTION, RESTRICT, SET DEFAULT
+      ON UPDATE CASCADE;
+
+DESC phone;
+
+SELECT * FROM orders;
+
+SELECT id, ProductAvailability, -- Перед CASE ставится запятая
+CASE
+	WHEN ProductAvailability = "Нeт" THEN "Неполный"
+    WHEN ProductAvailability = "Ecть" THEN "Полный"
+    ELSE "Error 404"
+END AS result
+FROM orders;
+
+-- 4. Чем NULL отличается от 0?
+-- NULL указывает на отсутствие информации, в то время как 0 означает, что информация известна и равна нулю
+-- В контексте программирования, NULL обычно используется для обозначения пустого указателя или ссылки, что означает отсутствие значения или адреса. В то же время, 0 является числовым значением, которое может быть использовано в арифметических и математических операциях и иметь значение равное нулю.
